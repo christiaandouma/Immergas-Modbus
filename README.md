@@ -1,7 +1,6 @@
 Immergas-Modbus
 ===============
 
-Immergas-Modbus
 ===============
 
 Minimal project overview
