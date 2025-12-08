@@ -14,23 +14,3 @@ Project goals
 - Implement a simple Modbus RTU client (CRC, read/write) and safe wiring for entity writes.
 
 See `DOCS/DEVELOPER.md` for detailed developer instructions, goals, assumptions, and the test harness usage.
-
-Quick start
------------
-- Regenerate the header after updating `immergas_registers.json`:
-
-```powershell
-python .\tools\generate_pdus_header.py
-```
-
-- Build with ESPHome (using `example.yaml` as a starting point):
-
-```powershell
-esphome compile example.yaml
-esphome run example.yaml
-```
-
-Notes
------
-- The detailed developer instructions and test-harness steps were moved to `DOCS/DEVELOPER.md` to keep this `README.md` concise.
-- If you need archived helper scripts, see the `archive/` directory.
