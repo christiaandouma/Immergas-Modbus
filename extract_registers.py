@@ -42,15 +42,15 @@ def scan_object(obj, pdus: dict):
 
     if 'pdu' in obj:
         p = obj.get('pdu')
-        if p is None and p != 0:
+        if not p and p != 0:
             pass
         else:
             rec = pdus.setdefault(p, {'pdu': p, 'views': [], 'commands': [], 'messages': []})
-            if 'view' in obj:
+            if obj.get('view'):
                 rec['views'].append(obj['view'])
-            if obj.get('action') == 'write' and 'view' in obj:
+            if obj.get('action') == 'write' and obj.get('view'):
                 rec['commands'].append(obj['view'])
-            if 'item' in obj and 'data' in obj:
+            if obj.get('item') and obj.get('data'):
                 rec['commands'].append({'item': obj['item'], 'data': obj['data']})
             if obj.get('action') in ('read', 'write'):
                 rec['messages'].append({'action': obj.get('action')})
