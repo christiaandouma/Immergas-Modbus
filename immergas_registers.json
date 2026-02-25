@@ -2,6 +2,875 @@
   "generated_at": "2025-12-01T21:31:20.593425Z",
   "pdus": [
     {
+      "pdu": 0,
+      "views": [
+        {
+          "item": "ll-power-on-off",
+          "label-en": "Power On/Off",
+          "label-it": "Accensione",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 1,
+      "views": [
+        {
+          "item": "ll-mode-setting",
+          "label-en": "Mode Setting",
+          "label-it": "Modo Funzionamento",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 2,
+      "views": [
+        {
+          "item": "ll-t1s-water-temp-setting",
+          "label-en": "T1s Water Temperature Setting",
+          "label-it": "Impostazione Temperatura Acqua T1s",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 3,
+      "views": [
+        {
+          "item": "ll-second-target-temp-setting",
+          "label-en": "Second Target Temperature Setting",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 4,
+      "views": [
+        {
+          "item": "ll-hp-water-temp-setting-t5s",
+          "label-en": "HP Water Temperature Setting T5s",
+          "label-it": "Temperatura Acqua Impostata",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 5,
+      "views": [
+        {
+          "item": "ll-snow-blowing-switch",
+          "label-en": "Snow Blowing Switch",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 7,
+      "views": [
+        {
+          "item": "ll-forced-water-heating",
+          "label-en": "Forced Water Heating",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 8,
+      "views": [
+        {
+          "item": "ll-forced-tbh",
+          "label-en": "Forced TBH",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 9,
+      "views": [
+        {
+          "item": "ll-forced-ibh1",
+          "label-en": "Forced IBH1",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 11,
+      "views": [
+        {
+          "item": "ll-t1s-water-temp-zone1",
+          "label-en": "T1s Water Temperature Zone1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 12,
+      "views": [
+        {
+          "item": "ll-t1s-water-temp-zone2",
+          "label-en": "T1s Water Temperature Zone2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 13,
+      "views": [
+        {
+          "item": "ll-t-antilock",
+          "label-en": "T Antilock",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 100,
+      "views": [
+        {
+          "item": "ll-hp-operating-frequency",
+          "label-en": "HP Operating Frequency",
+          "label-it": "Frequenza Operativa",
+          "suffix": " Hz",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 101,
+      "views": [
+        {
+          "item": "ll-hp-operating-mode-set",
+          "label-en": "HP Operating Mode Set",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 102,
+      "views": [
+        {
+          "item": "ll-hp-fan-speed",
+          "label-en": "HP Fan Speed",
+          "label-it": "Velocità Ventilatore",
+          "suffix": " rpm",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 103,
+      "views": [
+        {
+          "item": "ll-hp-pmv-opening",
+          "label-en": "HP PMV Opening",
+          "label-it": "Apertura Valvola Espansione",
+          "suffix": " P",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 104,
+      "views": [
+        {
+          "item": "ll-hp-water-inlet-temp-tw-in",
+          "label-en": "HP Water Inlet Temperature TW_in",
+          "label-it": "Temp. Acqua IN",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 105,
+      "views": [
+        {
+          "item": "ll-hp-water-outlet-temp-tw-out",
+          "label-en": "HP Water Outlet Temperature TW_out",
+          "label-it": "Temp. Acqua OUT",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 106,
+      "views": [
+        {
+          "item": "ll-hp-condenser-temp-t3",
+          "label-en": "HP Condenser Temperature T3",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 107,
+      "views": [
+        {
+          "item": "ll-hp-outdoor-ambient-temp-t4",
+          "label-en": "HP Outdoor Ambient Temperature T4",
+          "label-it": "Temp. Aria Esterna T4",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 108,
+      "views": [
+        {
+          "item": "ll-hp-compressor-discharge-temp-tp",
+          "label-en": "HP Compressor Discharge Temperature Tp",
+          "label-it": "Temp. Scarico Compressore",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 109,
+      "views": [
+        {
+          "item": "ll-hp-compressor-suction-temp",
+          "label-en": "HP Compressor Suction Temperature",
+          "label-it": "Temp. Aspirazione Compressore",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 110,
+      "views": [
+        {
+          "item": "ll-hp-total-outlet-water-temp-t1",
+          "label-en": "HP Total Outlet Water Temperature T1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 111,
+      "views": [
+        {
+          "item": "ll-hp-zone2-water-supply-temp-tw2",
+          "label-en": "HP Zone 2 Water Supply Temperature Tw2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 112,
+      "views": [
+        {
+          "item": "ll-hp-heat-exchanger-water-temp-t2",
+          "label-en": "HP Heat Exchanger Side Water Temperature T2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 113,
+      "views": [
+        {
+          "item": "ll-hp-refrigerant-side-temp-t2b",
+          "label-en": "HP Refrigerant Side Temperature T2B",
+          "label-it": "Temp. Refrigerante Uscita",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 114,
+      "views": [
+        {
+          "item": "ll-hp-room-temp-ta",
+          "label-en": "HP Room Temperature Ta",
+          "label-it": "Temp. Refrigerante IN",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 115,
+      "views": [
+        {
+          "item": "ll-hp-water-tank-temp-t5",
+          "label-en": "HP Water Tank Temperature T5",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 116,
+      "views": [
+        {
+          "item": "ll-hp-1st-pressure",
+          "label-en": "HP 1st Pressure",
+          "suffix": " kPa",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 117,
+      "views": [
+        {
+          "item": "ll-hp-2nd-pressure",
+          "label-en": "HP 2nd Pressure",
+          "label-it": "Pressione Compressore P1",
+          "suffix": " kPa",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 118,
+      "views": [
+        {
+          "item": "ll-hp-outdoor-unit-current",
+          "label-en": "HP Outdoor Unit Current",
+          "suffix": " A",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 119,
+      "views": [
+        {
+          "item": "ll-hp-outdoor-unit-voltage",
+          "label-en": "HP Outdoor Unit Voltage",
+          "label-it": "Corrente Compressore",
+          "suffix": " V",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 120,
+      "views": [
+        {
+          "item": "ll-hp-hydraulic-module-current-1",
+          "label-en": "HP Hydraulic Module Current 1",
+          "label-it": "Tensione Alimentazione",
+          "suffix": " A",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 121,
+      "views": [
+        {
+          "item": "ll-hp-hydraulic-module-current-2",
+          "label-en": "HP Hydraulic Module Current 2",
+          "suffix": " A",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 122,
+      "views": [
+        {
+          "item": "ll-hp-compressor-operating-time",
+          "label-en": "HP Compressor Operating Time",
+          "label-it": "Tempo Totale Compressore",
+          "suffix": " h",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 124,
+      "views": [
+        {
+          "item": "ll-hp-power-error",
+          "label-en": "HP Power Error",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 125,
+      "views": [
+        {
+          "item": "ll-hp-error1",
+          "label-en": "HP Error 1",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 126,
+      "views": [
+        {
+          "item": "ll-hp-error2",
+          "label-en": "HP Error 2",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 127,
+      "views": [
+        {
+          "item": "ll-hp-error3",
+          "label-en": "HP Error 3",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 130,
+      "views": [
+        {
+          "item": "ll-pump-compressor-status",
+          "label-en": "Pump/Compressor Status",
+          "label-it": "Stato Pompa/Compressore",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 132,
+      "views": [
+        {
+          "item": "ll-hp-unit-target-frequency",
+          "label-en": "HP Unit Target Frequency",
+          "suffix": " Hz",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 133,
+      "views": [
+        {
+          "item": "ll-hp-dc-bus-current",
+          "label-en": "HP DC Bus Current",
+          "suffix": " A",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 134,
+      "views": [
+        {
+          "item": "ll-hp-dc-bus-voltage",
+          "label-en": "HP DC Bus Voltage",
+          "label-it": "Alimentazione Generatore CC",
+          "suffix": " V",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 135,
+      "views": [
+        {
+          "item": "ll-hp-tf-module-temp",
+          "label-en": "HP TF Module Temperature",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 136,
+      "views": [
+        {
+          "item": "ll-hp-weather-curve-1",
+          "label-en": "HP Weather Curve 1",
+          "label-it": "Temp. Modulo TF",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 137,
+      "views": [
+        {
+          "item": "ll-hp-weather-curve-2",
+          "label-en": "HP Weather Curve 2",
+          "label-it": "Indicatore Modalità Temperatura",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 138,
+      "views": [
+        {
+          "item": "ll-hp-water-flow",
+          "label-en": "HP Water Flow",
+          "label-it": "Flusso Acqua",
+          "suffix": " m³/h",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 139,
+      "views": [
+        {
+          "item": "ll-hp-outdoor-unit-current-limit",
+          "label-en": "HP Outdoor Unit Current Limit",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 140,
+      "views": [
+        {
+          "item": "ll-hp-hydraulic-module-performance",
+          "label-en": "HP Hydraulic Module Performance",
+          "suffix": " kW",
+          "decimal": 2,
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 141,
+      "views": [
+        {
+          "item": "ll-hp-tsolar",
+          "label-en": "HP Tsolar",
+          "label-it": "Capacità Pompa di Calore",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 142,
+      "views": [
+        {
+          "item": "ll-hp-parallel-units-count",
+          "label-en": "HP Number of Parallel-Connected Units",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 143,
+      "views": [
+        {
+          "item": "ll-hp-input-energy-upper",
+          "label-en": "HP Input Energy Upper Bits",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 144,
+      "views": [
+        {
+          "item": "ll-hp-input-energy-lower",
+          "label-en": "HP Input Energy Lower Bits",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 145,
+      "views": [
+        {
+          "item": "ll-hp-output-energy-upper",
+          "label-en": "HP Output Energy Upper Bits",
+          "label-it": "Consumo Energia",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 146,
+      "views": [
+        {
+          "item": "ll-hp-output-energy-lower",
+          "label-en": "HP Output Energy Lower Bits",
+          "return": ["u16"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 212,
+      "views": [
+        {
+          "item": "ll-dt5-on",
+          "label-en": "DT5 On",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 213,
+      "views": [
+        {
+          "item": "ll-dt1-s5",
+          "label-en": "DT1 S5",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 215,
+      "views": [
+        {
+          "item": "ll-t4-dhw-max",
+          "label-en": "T4 DHW Max",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 216,
+      "views": [
+        {
+          "item": "ll-t4-dhw-min",
+          "label-en": "T4 DHW Min",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 219,
+      "views": [
+        {
+          "item": "ll-t4-tbh-on",
+          "label-en": "T4 TBH On",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 237,
+      "views": [
+        {
+          "item": "ll-t4-ahs-on",
+          "label-en": "T4 AHS On",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 261,
+      "views": [
+        {
+          "item": "ll-t1-setc1",
+          "label-en": "T1 SetC1 Cool Setpoint 1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 262,
+      "views": [
+        {
+          "item": "ll-t1-setc2",
+          "label-en": "T1 SetC2 Cool Setpoint 2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 263,
+      "views": [
+        {
+          "item": "ll-t4c1",
+          "label-en": "T4C1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 264,
+      "views": [
+        {
+          "item": "ll-t4c2",
+          "label-en": "T4C2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 265,
+      "views": [
+        {
+          "item": "ll-t1-seth1",
+          "label-en": "T1 SetH1 Heat Setpoint 1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 266,
+      "views": [
+        {
+          "item": "ll-t1-seth2",
+          "label-en": "T1 SetH2 Heat Setpoint 2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 267,
+      "views": [
+        {
+          "item": "ll-t4h1",
+          "label-en": "T4H1",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
+      "pdu": 268,
+      "views": [
+        {
+          "item": "ll-t4h2",
+          "label-en": "T4H2",
+          "return": ["temp"]
+        }
+      ],
+      "commands": [],
+      "messages": [{"action": "read"}]
+    },
+    {
       "pdu": 2000,
       "views": [
         {
