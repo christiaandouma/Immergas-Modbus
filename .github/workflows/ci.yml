@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+
+  validate-json:
+    name: Validate Register JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate immergas_registers.json
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+          with open("immergas_registers.json", encoding="utf-8") as f:
+              data = json.load(f)
+          pdus = data.get("pdus", [])
+          if not pdus:
+              print("ERROR: no PDUs found", file=sys.stderr); sys.exit(1)
+          for entry in pdus:
+              if "pdu" not in entry:
+                  print(f"ERROR: entry missing 'pdu' field: {entry}", file=sys.stderr); sys.exit(1)
+          print(f"OK: {len(pdus)} PDU entries validated")
+          EOF
+
+  generate-header:
+    name: Generate & Sync PDU Header
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Capture committed header
+        run: cp components/immergas_modbus/immergas_pdus.h /tmp/pdus_committed.h
+
+      - name: Run header generator
+        run: python3 tools/generate_pdus_header.py
+
+      - name: Verify required enum values are present
+        run: |
+          for sym in IM_PDU_TEMP IM_PDU_LB_FLAG8 IM_PDU_U32 IM_PDU_S32 IM_PDU_FLOAT32; do
+            grep -q "$sym" components/immergas_modbus/immergas_pdus.h \
+              || { echo "ERROR: $sym missing from generated header"; exit 1; }
+          done
+          echo "All required enum values present"
+
+      - name: Check header is in sync with generator
+        run: |
+          if ! diff -u /tmp/pdus_committed.h components/immergas_modbus/immergas_pdus.h; then
+            echo ""
+            echo "ERROR: immergas_pdus.h is out of sync."
+            echo "Run 'python3 tools/generate_pdus_header.py' and commit the result."
+            exit 1
+          fi
+          echo "Header is in sync with generator"
+
+  build-cpp:
+    name: Build & Run C++ Loopback Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile loopback test
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic \
+              -o /tmp/modbus_loopback tools/modbus_loopback.cpp
+
+      - name: Run loopback test
+        run: |
+          /tmp/modbus_loopback | tee /tmp/loopback_output.txt
+          grep -q "Computed CRC" /tmp/loopback_output.txt \
+            || { echo "ERROR: unexpected loopback output"; exit 1; }
+          echo "Loopback test passed"
+
+  lint-python:
+    name: Python Lint (flake8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Lint tools and top-level scripts
+        run: |
+          flake8 tools/generate_pdus_header.py extract_registers.py \
+            --max-line-length=120 \
+            --extend-ignore=E501
