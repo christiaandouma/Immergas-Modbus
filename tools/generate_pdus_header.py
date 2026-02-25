@@ -17,6 +17,7 @@ TYPE_U8 = 3
 TYPE_TEMP = 4
 TYPE_LB_FLAG8 = 5
 
+
 def detect_type(view):
     ret = view.get("return")
     if not ret:
@@ -41,6 +42,7 @@ def detect_type(view):
             return TYPE_LB_FLAG8, 1, 1.0
     # fallback
     return TYPE_UNKNOWN, 1, 1.0
+
 
 def main():
     data = json.loads(JSON_P.read_text())
@@ -86,18 +88,19 @@ def main():
     header.append("enum ImmergasPduType : uint8_t { IM_PDU_UNKNOWN=0, IM_PDU_U16=1, IM_PDU_S16=2, IM_PDU_U8=3, IM_PDU_TEMP=4, IM_PDU_LB_FLAG8=5, IM_PDU_U32=6, IM_PDU_S32=7, IM_PDU_FLOAT32=8 };\n")
     header.append("struct ImmergasPduEntry { uint16_t pdu; uint16_t reg_addr; uint8_t count; uint8_t type; float scale; bool writable; const char *label; };\n")
 
-    header.append(f"static const ImmergasPduEntry immergas_pdu_map[] = {{")
+    header.append("static const ImmergasPduEntry immergas_pdu_map[] = {")
     for e in entries:
         # try to include a label if available in the source (we have no label here, use empty)
         label = '""'
         header.append("    { %d, %d, %d, %d, %ff, %s, %s }," % (e["pdu"], e["reg"], e["count"], e["type"], e["scale"], "true" if e["writable"] else "false", label))
     header.append("};")
-    header.append(f"static const size_t immergas_pdu_map_len = sizeof(immergas_pdu_map)/sizeof(immergas_pdu_map[0]);")
+    header.append("static const size_t immergas_pdu_map_len = sizeof(immergas_pdu_map)/sizeof(immergas_pdu_map[0]);")
     header.append("}} // namespace esphome::immergas_modbus")
 
     OUT_P.parent.mkdir(parents=True, exist_ok=True)
     OUT_P.write_text("\n".join(header))
     print(f"Wrote {OUT_P}")
+
 
 if __name__ == '__main__':
     main()
