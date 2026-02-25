@@ -1,183 +1,548 @@
+# =============================================================================
+# ESPHome configuratie voor Immergas Magis Combo V2
+# Read-only monitoring via BMS bus (T-/T+) - Standaard Modbus
+# =============================================================================
+#
+# HARDWARE:
+#   - M5Stack ATOM Lite (ESP32) + M5Stack ATOM RS-485 Base
+#   - OF: ESP32 + MAX485 RS485 module
+#
+# BEKABELING (naar Immergas BINNENUNIT):
+#   RS485 A (D+) → T+
+#   RS485 B (D-) → T-
+#   GND          → Klem 24 (GND)
+#
+# VOORDELEN BMS BUS:
+#   - Geen toegang tot buitenunit nodig
+#   - Geen DIP-switch aanpassing nodig
+#   - Toegang tot Immergas-specifieke registers
+#
+# MODBUS SETTINGS:
+#   - Baudrate: 9600
+#   - Data bits: 8
+#   - Parity: None
+#   - Stop bits: 1
+#   - Slave adres: 11 (standaard)
+#
+# =============================================================================
+
 esphome:
-  name: immergas_hp
-  platform: ESP32
-  board: esp32dev
+  name: immergas-magis-combo
+  friendly_name: Immergas Magis Combo
+  comment: "Warmtepomp monitoring via BMS Modbus (T-/T+)"
 
-logger:
-  level: DEBUG
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
 
-web_server:
-  port: 80
-  version: 3
-  log: true
-  local: true
-
-ota:
-  - platform: web_server
-  - platform: esphome
+# =============================================================================
+# NETWERK & API
+# =============================================================================
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  ap: {}
+
+  ap:
+    ssid: "Immergas-Fallback"
+    password: "fallback123"
+
+captive_portal:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+web_server:
+  port: 80
+  version: 3
+  local: true
+
+logger:
+  level: INFO
+  baud_rate: 0  # Disable UART logging (we need UART for Modbus)
+
+# =============================================================================
+# UART / RS-485 CONFIGURATIE
+# =============================================================================
 
 uart:
-  id: uart1
-  tx_pin: GPIO17
-  rx_pin: GPIO16
+  id: mod_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
   baud_rate: 9600
-  parity: EVEN
+  parity: NONE
+  stop_bits: 1
 
-# Immergas Modbus integration configuration
-immergas_modbus:
-  id: immergas_controller
-  client:
-    id: immergas_client
-  debug_log_messages: true
-  language: en
-  devices:
-    - id: immergas_dev_20
-      address: "20.00.00"
-    - id: immergas_dev_10
-      address: "10.00.00"
+# =============================================================================
+# MODBUS CONFIGURATIE
+# =============================================================================
 
-# --- Important entities (auto-generated and hand-picked) ---
-# Domestic Hot Water (DHW)
+modbus:
+  id: modbus1
+  uart_id: mod_bus
+
+modbus_controller:
+  - id: immergas
+    address: 11        # Standaard slave adres binnenunit
+    modbus_id: modbus1
+    setup_priority: -10
+    update_interval: 30s
+
+# =============================================================================
+# SENSOREN - SYSTEEMSTATUS
+# =============================================================================
+
 sensor:
-  - platform: immergas_modbus
-    message: 0xBC8   # PDU 3016: DWH Current Temperature
-    name: "DHW Current Temperature"
-    device_id: immergas_dev_20
+  # Systeemmodus (0=uit, 1=warm water, 2=koeling, 3=verwarming)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Systeemmodus RAW"
+    id: system_mode_raw
+    register_type: holding
+    address: 2000
+    value_type: U_WORD
+    internal: true
 
-  - platform: immergas_modbus
-    message: 0xBB2   # PDU 3002: Outdoor Temperature (used elsewhere)
-    name: "Outdoor Temperature"
-    device_id: immergas_dev_20
+  # =============================================================================
+  # SENSOREN - TEMPERATUREN
+  # =============================================================================
 
-  - platform: immergas_modbus
-    message: 0x4238  # Flow Temp Out (example)
-    name: "Flow Temperature Out"
-    device_id: immergas_dev_20
+  # Aanvoertemperatuur (D20)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Aanvoertemperatuur"
+    id: flow_temp
+    register_type: holding
+    address: 3000
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
 
-  - platform: immergas_modbus
-    message: 0x4236  # Flow Temp Return (example)
-    name: "Flow Temperature Return"
-    device_id: immergas_dev_20
+  # Retourtemperatuur (D08)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Retourtemperatuur"
+    id: return_temp
+    register_type: holding
+    address: 3001
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
 
-# Flow Temp Delta (calculated)
+  # Buitentemperatuur (D06)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Buitentemperatuur"
+    id: outdoor_temp
+    register_type: holding
+    address: 3002
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # Warm water temperatuur (D03)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Warmwater Temperatuur"
+    id: dhw_temp
+    register_type: holding
+    address: 3016
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # Binnenunit retourtemperatuur / koudemiddel (D23)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Binnenunit Retourtemperatuur"
+    id: indoor_return_temp
+    register_type: holding
+    address: 3029
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # Koudemiddel vloeistof temperatuur (D24)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Koudemiddel Temperatuur"
+    id: refrigerant_temp
+    register_type: holding
+    address: 3056
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # =============================================================================
+  # SENSOREN - SETPOINTS (READ-ONLY)
+  # =============================================================================
+
+  # Warm water setpoint
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Warmwater Setpoint"
+    id: dhw_setpoint
+    register_type: holding
+    address: 2095
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # Zone 1 max CV temperatuur (R04)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Zone 1 Max CV Temperatuur"
+    id: zone1_max_ch
+    register_type: holding
+    address: 4351
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+
+  # Zone 1 min CV temperatuur (R05)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Zone 1 Min CV Temperatuur"
+    id: zone1_min_ch
+    register_type: holding
+    address: 4350
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+
+  # Zone 1 max koeling temperatuur (R13)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Zone 1 Max Koeling Temperatuur"
+    id: zone1_max_cool
+    register_type: holding
+    address: 4356
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+
+  # Zone 1 min koeling temperatuur (R12)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Zone 1 Min Koeling Temperatuur"
+    id: zone1_min_cool
+    register_type: holding
+    address: 4357
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+
+  # Zone 2 max CV temperatuur (R08)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Zone 2 Max CV Temperatuur"
+    id: zone2_max_ch
+    register_type: holding
+    address: 3003
+    value_type: U_WORD
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+
+  # =============================================================================
+  # SENSOREN - POMPEN & FLOW
+  # =============================================================================
+
+  # Pompsnelheid (D14) in l/h
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Pompsnelheid"
+    id: pump_flow_rate
+    register_type: holding
+    address: 3054
+    value_type: U_WORD
+    unit_of_measurement: "l/h"
+    icon: mdi:pump
+    state_class: measurement
+    accuracy_decimals: 0
+
+  # Pomp min snelheid % (A03)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Pomp Min Snelheid"
+    id: pump_min_speed
+    register_type: holding
+    address: 6010
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    icon: mdi:pump
+    accuracy_decimals: 0
+
+  # Pomp max snelheid % (A04)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Pomp Max Snelheid"
+    id: pump_max_speed
+    register_type: holding
+    address: 6011
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    icon: mdi:pump
+    accuracy_decimals: 0
+
+  # =============================================================================
+  # SENSOREN - STATUS CODES
+  # =============================================================================
+
+  # Warmtepomp status
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Warmtepomp Status Code"
+    id: heatpump_status
+    register_type: holding
+    address: 6500
+    value_type: U_WORD
+    icon: mdi:heat-pump
+
+  # Ketel status
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Ketel Status Code"
+    id: boiler_status
+    register_type: holding
+    address: 6501
+    value_type: U_WORD
+    icon: mdi:water-boiler
+
+  # Systeem status
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Systeem Status Code"
+    id: system_status
+    register_type: holding
+    address: 6502
+    value_type: U_WORD
+    icon: mdi:information
+
+  # EEV positie (expansieventiel)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "EEV Positie"
+    id: eev_position
+    register_type: holding
+    address: 4557
+    value_type: U_WORD
+    icon: mdi:valve
+    accuracy_decimals: 0
+
+  # Tijd tussen ontstekingen (T05) in minuten
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Tijd Tussen Ontstekingen"
+    id: ignition_interval
+    register_type: holding
+    address: 6000
+    value_type: U_WORD
+    unit_of_measurement: "min"
+    icon: mdi:timer
+    accuracy_decimals: 0
+
+  # Buitenunit model (A11)
+  - platform: modbus_controller
+    modbus_controller_id: immergas
+    name: "Buitenunit Model Code"
+    id: outdoor_unit_model
+    register_type: holding
+    address: 4202
+    value_type: U_WORD
+    icon: mdi:information
+    entity_category: diagnostic
+
+  # =============================================================================
+  # BEREKENDE SENSOREN
+  # =============================================================================
+
+  # Delta T (aanvoer - retour)
   - platform: template
-    name: "Flow Temp Delta"
+    name: "Delta T"
+    id: delta_t
+    icon: mdi:thermometer-lines
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: 30s
     lambda: |-
-      return id(flow_temp_out).state - id(flow_temp_return).state;
-    update_interval: 10s
-    id: flow_temp_delta
+      if (isnan(id(flow_temp).state) || isnan(id(return_temp).state)) {
+        return NAN;
+      }
+      return id(flow_temp).state - id(return_temp).state;
 
-# Energy / Power
-  - platform: immergas_modbus
-    message: 0x8414
-    name: "Total Energy Consumed"
-    device_id: immergas_dev_10
-
-  - platform: immergas_modbus
-    message: 0x4427
-    name: "Total Energy Produced"
-    device_id: immergas_dev_20
-
-  - platform: immergas_modbus
-    message: 0x8413
-    name: "Power Consumed Last Minute"
-    id: power_consumed_last_min
-    device_id: immergas_dev_10
-
-  - platform: immergas_modbus
-    message: 0x4426
-    name: "Power Produced Last Minute"
-    id: power_generated_last_min
-    device_id: immergas_dev_20
-
-# COP calculations (templates)
+  # Geschat thermisch vermogen (kW)
   - platform: template
-    name: "COP - Instant"
+    name: "Thermisch Vermogen"
+    id: thermal_power
+    icon: mdi:fire
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 2
+    update_interval: 30s
     lambda: |-
-      if (id(power_consumed_last_min).state <= 0) return 0.0;
-      return id(power_generated_last_min).state / id(power_consumed_last_min).state;
-    update_interval: 10s
-    id: cop_instant
+      if (isnan(id(pump_flow_rate).state) || isnan(id(delta_t).state)) {
+        return NAN;
+      }
+      // P = flow (l/h) * dT (°C) * 1.163 (Wh/l/K) / 1000
+      return (id(pump_flow_rate).state * id(delta_t).state * 1.163) / 1000.0;
 
+  # =============================================================================
+  # ESP32 DIAGNOSTIEK
+  # =============================================================================
+
+  - platform: wifi_signal
+    name: "WiFi Signaal"
+    update_interval: 60s
+    entity_category: diagnostic
+
+  - platform: uptime
+    name: "Uptime"
+    entity_category: diagnostic
+
+  - platform: internal_temperature
+    name: "ESP32 Temperatuur"
+    entity_category: diagnostic
+
+# =============================================================================
+# TEXT SENSOREN - LEESBARE STATUSSEN
+# =============================================================================
+
+text_sensor:
+  # Systeemmodus leesbaar
   - platform: template
-    name: "COP - Total"
+    name: "Systeemmodus"
+    id: system_mode
+    icon: mdi:thermostat
+    update_interval: 30s
     lambda: |-
-      if (id(total_energy_consumed).state <= 0) return 0.0;
-      return id(total_energy_produced).state / id(total_energy_consumed).state;
-    update_interval: 300s
-    id: cop_total
+      int mode = (int)id(system_mode_raw).state;
+      switch(mode) {
+        case 0: return std::string("Uit");
+        case 1: return std::string("Alleen warm water");
+        case 2: return std::string("Koeling");
+        case 3: return std::string("Verwarming");
+        default: return std::string("Onbekend");
+      }
 
+  # Systeem status leesbaar (geschatte betekenissen)
   - platform: template
-    name: "COP - Daily"
+    name: "Systeem Status"
+    id: system_status_text
+    icon: mdi:information
+    update_interval: 30s
     lambda: |-
-      if (id(daily_energy_consumed).state <= 0) return 0.0;
-      return id(daily_heat_generated).state / id(daily_energy_consumed).state;
-    update_interval: 300s
-    id: cop_daily
+      int status = (int)id(system_status).state;
+      switch(status) {
+        case 0: return std::string("Stand-by");
+        case 6: return std::string("Verwarmen");
+        case 8: return std::string("Verwarmen (cyclus)");
+        case 41: return std::string("Uit");
+        case 82: return std::string("Stand-by");
+        default: return std::string("Code: " + std::to_string(status));
+      }
 
-# Binary / Status
+  - platform: wifi_info
+    ip_address:
+      name: "IP Adres"
+      entity_category: diagnostic
+    ssid:
+      name: "WiFi SSID"
+      entity_category: diagnostic
+
+  - platform: version
+    name: "ESPHome Versie"
+    entity_category: diagnostic
+
+# =============================================================================
+# BINAIRE SENSOREN
+# =============================================================================
+
 binary_sensor:
-  - platform: immergas_modbus
-    message: 0x8010   # Compressor Status (real mapped value)
-    name: "Compressor Status"
-    device_id: immergas_dev_10
+  - platform: status
+    name: "Status"
+    entity_category: diagnostic
 
-# Numbers / Setpoints
-number:
-  - platform: immergas_modbus
-    message: 0x82F   # PDU 2095: DWH Target
-    name: "DHW Target Temperature"
-    min_value: 20.0
-    max_value: 80.0
-    step: 0.1
-    device_id: immergas_dev_20
+  # Verwarming actief (afgeleid van systeemmodus)
+  - platform: template
+    name: "Verwarming Actief"
+    id: heating_active
+    icon: mdi:radiator
+    device_class: heat
+    lambda: |-
+      return (int)id(system_mode_raw).state == 3;
 
-  - platform: immergas_modbus
-    message: 0x7DF   # PDU 2015: Zone 1 Target Temp
-    name: "Zone 1 Target Temperature"
-    min_value: 5.0
-    max_value: 35.0
-    step: 0.1
-    device_id: immergas_dev_20
+  # Koeling actief
+  - platform: template
+    name: "Koeling Actief"
+    id: cooling_active
+    icon: mdi:snowflake
+    device_class: cold
+    lambda: |-
+      return (int)id(system_mode_raw).state == 2;
 
-# Switch / Modes
-select:
-  - platform: immergas_modbus
-    message: 0x7D0   # Operating Mode (placeholder PDU)
-    name: "Operating Mode"
-    options: ["Off", "DWH", "Summer", "Winter"]
-    device_id: immergas_dev_20
+  # Warm water actief
+  - platform: template
+    name: "Warm Water Actief"
+    id: dhw_active
+    icon: mdi:water-boiler
+    lambda: |-
+      return (int)id(system_mode_raw).state == 1;
 
-switch:
-  - platform: immergas_modbus
-    message: 0x7D1
-    name: "Boiler Enabled"
-    device_id: immergas_dev_20
+# =============================================================================
+# KNOPPEN
+# =============================================================================
+
+button:
+  - platform: restart
+    name: "Herstart ESP"
+    entity_category: config
+
+# =============================================================================
+# TIJD
+# =============================================================================
 
 time:
   - platform: homeassistant
     id: homeassistant_time
-    timezone: "Europe/London"
-
-interval:
-  - interval: 30min
-    startup_delay: 30s
-    then:
-      # Placeholder: add actions to request batched reads or housekeeping here.
-      - logger.log: "Interval trigger: request batched reads"
-
-# Daily totals (requires power sensors defined above)
-total_daily_energy:
-  - id: daily_energy_consumed
-    name: "Daily Energy Consumed"
-    power_id: power_consumed_last_min
-
-  - id: daily_heat_generated
-    name: "Daily Heat Generated"
-    power_id: power_generated_last_min
-
+    timezone: "Europe/Amsterdam"
