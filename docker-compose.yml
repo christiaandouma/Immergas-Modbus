@@ -1,0 +1,18 @@
+services:
+  esphome:
+    image: ghcr.io/esphome/esphome
+    container_name: esphome
+    volumes:
+      - .:/config
+    ports:
+      - "6052:6052"   # ESPHome dashboard
+    network_mode: host  # required for mDNS / device discovery on the LAN
+    restart: unless-stopped
+
+  # Uncomment the block below and set the correct device path to enable
+  # USB flashing directly from the dashboard or 'docker compose run' commands.
+  #
+  # esphome:
+  #   ...
+  #   devices:
+  #     - /dev/ttyUSB0:/dev/ttyUSB0
