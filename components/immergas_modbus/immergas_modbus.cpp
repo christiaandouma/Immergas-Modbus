@@ -243,7 +243,7 @@ void ImmergasModbus::poll_device(uint16_t slave, IM_Device *dev) {
 			float value = 0.0f;
 			switch (e.type) {
 				case IM_PDU_TEMP:
-					if (!sub.empty()) value = static_cast<float>(sub[0]) * e.scale;
+					if (!sub.empty()) value = static_cast<float>(static_cast<int16_t>(sub[0])) * e.scale;
 					break;
 				case IM_PDU_U16:
 					if (!sub.empty()) value = static_cast<float>(sub[0]);

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 namespace esphome { namespace immergas_modbus {
-enum ImmergasPduType : uint8_t { IM_PDU_UNKNOWN=0, IM_PDU_U16=1, IM_PDU_S16=2, IM_PDU_U8=3, IM_PDU_TEMP=4, IM_PDU_LB_FLAG8=5 };
+enum ImmergasPduType : uint8_t { IM_PDU_UNKNOWN=0, IM_PDU_U16=1, IM_PDU_S16=2, IM_PDU_U8=3, IM_PDU_TEMP=4, IM_PDU_LB_FLAG8=5, IM_PDU_U32=6, IM_PDU_S32=7, IM_PDU_FLOAT32=8 };
 
 struct ImmergasPduEntry { uint16_t pdu; uint16_t reg_addr; uint8_t count; uint8_t type; float scale; bool writable; };
 
