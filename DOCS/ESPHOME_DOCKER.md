@@ -143,6 +143,59 @@ docker run --rm \
 
 ---
 
+## 8. Using docker-compose (dashboard + persistent container)
+
+A `docker-compose.yml` is provided in the repository root. It starts the
+ESPHome dashboard on **http://localhost:6052** and keeps it running so you can
+manage the device through the web UI.
+
+```bash
+# Start the dashboard (detached)
+docker compose up -d
+
+# Open http://localhost:6052 in your browser, then click "immergas_hp" to
+# compile, flash, and view logs from the UI.
+
+# Stop the dashboard
+docker compose down
+```
+
+### One-shot commands via docker compose run
+
+You can also use `docker compose run` to run single commands without starting
+the long-running dashboard service:
+
+```bash
+# Validate
+docker compose run --rm esphome config example.yaml
+
+# Compile
+docker compose run --rm esphome compile example.yaml
+
+# Flash via OTA
+docker compose run --rm esphome run example.yaml --device 192.168.1.XX
+
+# Stream logs
+docker compose run --rm esphome logs example.yaml --device 192.168.1.XX
+```
+
+### USB flashing with docker-compose
+
+Uncomment the `devices` block in `docker-compose.yml` and set the correct port:
+
+```yaml
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+```
+
+Then flash with:
+
+```bash
+docker compose run --rm esphome run example.yaml --device /dev/ttyUSB0
+```
+
+---
+
 ## Quick-reference
 
 | Goal | Command |
@@ -153,3 +206,5 @@ docker run --rm \
 | Flash via OTA | `run example.yaml --device <IP>` |
 | Live logs (USB) | `logs example.yaml --device /dev/ttyUSB0` |
 | Live logs (OTA) | `logs example.yaml --device <IP>` |
+| Start dashboard | `docker compose up -d` → http://localhost:6052 |
+| One-shot compile | `docker compose run --rm esphome compile example.yaml` |
