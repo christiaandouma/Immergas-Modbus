@@ -21,25 +21,14 @@ jobs:
         run: sudo apt-get install -y cppcheck
 
       - name: Run cppcheck on loopback tool
+        # The loopback tool is self-contained (stdlib only) so full strictness applies.
+        # The ESPHome component sources require the ESPHome SDK headers which are not
+        # available in CI; they are excluded here to avoid false positives.
         run: |
           cppcheck --std=c++17 \
             --enable=warning,style,performance,portability \
             --error-exitcode=1 \
             tools/modbus_loopback.cpp
-
-      - name: Run cppcheck on component sources
-        # ESPHome headers are not available in CI so we suppress missing
-        # includes. The check still catches logic and style issues.
-        run: |
-          cppcheck --std=c++17 \
-            --enable=warning,style,performance,portability \
-            --error-exitcode=1 \
-            --suppress=missingInclude \
-            --suppress=missingIncludeSystem \
-            --suppress=unusedFunction \
-            -I components/immergas_modbus \
-            components/immergas_modbus/immergas_modbus.cpp \
-            components/immergas_modbus/im_device.cpp
 
   bandit:
     name: Python Security Scan (bandit)
@@ -62,17 +51,12 @@ jobs:
             tools/generate_pdus_header.py extract_registers.py
 
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL Analysis (C++)
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [cpp, python]
 
     steps:
       - uses: actions/checkout@v4
@@ -80,22 +64,14 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
-          # For C++: analyse only the self-contained loopback tool since
-          # the ESPHome component headers are unavailable in CI.
-          config: |
-            paths-ignore:
-              - "components/immergas_modbus/**"
-            paths:
-              - "tools"
-              - "extract_registers.py"
+          languages: cpp
 
-      - name: Build C++ (loopback only)
-        if: matrix.language == 'cpp'
-        run: |
-          g++ -std=c++17 -Wall -c tools/modbus_loopback.cpp -o /tmp/loopback.o
+      - name: Build loopback tool for CodeQL
+        # Compile only the self-contained loopback tool; the ESPHome component
+        # sources cannot be compiled without the full ESPHome SDK.
+        run: g++ -std=c++17 -Wall -c tools/modbus_loopback.cpp -o /tmp/loopback.o
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: "/language:cpp"

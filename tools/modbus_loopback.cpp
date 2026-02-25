@@ -19,7 +19,7 @@ static uint16_t crc16_calc_buf(const uint8_t *buf, size_t len) {
 }
 
 static void print_hex(const std::vector<uint8_t> &v) {
-  for (auto b : v) std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)b << " ";
+  for (auto b : v) std::cout << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(b) << " ";
   std::cout << std::dec << std::endl;
 }
 
