@@ -46,14 +46,12 @@ int main() {
   std::cout << "Computed CRC: 0x" << std::hex << read_crc << ", in CRC: 0x" << in_crc << std::dec << std::endl;
 
   // Parse registers
-  if (resp.size() >= 5) {
-    uint8_t bytecount = resp[2];
-    std::cout << "Bytecount: " << (int)bytecount << std::endl;
-    for (size_t i = 0; i < bytecount / 2; ++i) {
-      size_t idx = 3 + i * 2;
-      uint16_t val = (resp[idx] << 8) | resp[idx + 1];
-      std::cout << "Reg[" << i << "]=" << val << std::endl;
-    }
+  uint8_t bytecount = resp[2];
+  std::cout << "Bytecount: " << static_cast<int>(bytecount) << std::endl;
+  for (size_t i = 0; i < bytecount / 2; ++i) {
+    size_t idx = 3 + i * 2;
+    uint16_t val = (resp[idx] << 8) | resp[idx + 1];
+    std::cout << "Reg[" << i << "]=" << val << std::endl;
   }
   return 0;
 }
