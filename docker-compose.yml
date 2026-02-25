@@ -1,0 +1,75 @@
+# Immergas-Modbus — Docker Compose
+#
+# Services
+# --------
+#   esphome   ESPHome dashboard (default, always started)
+#   tools     Python tool runner — extract registers, generate header, lookup values
+#   loopback  C++ Modbus framing test (compile + run modbus_loopback.cpp)
+#
+# Quick-start
+# -----------
+#   docker compose up esphome          # start dashboard → http://localhost:6052
+#   docker compose run --rm tools python extract_registers.py
+#   docker compose run --rm tools python tools/generate_pdus_header.py
+#   docker compose run --rm tools python tools/lookup_register.py
+#   docker compose run --rm tools python tools/lookup_register.py --pdu 2100 --value 10
+#   docker compose run --rm loopback
+
+services:
+
+  # -------------------------------------------------------------------------
+  # ESPHome dashboard
+  #   Browse to http://localhost:6052 to compile, flash and monitor.
+  #   Secrets are read from secrets.yaml in the repository root.
+  # -------------------------------------------------------------------------
+  esphome:
+    image: ghcr.io/esphome/esphome:latest
+    container_name: immergas_esphome
+    volumes:
+      - .:/config                        # repository root mounted as /config
+    ports:
+      - "6052:6052"
+    command: dashboard /config
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------------
+  # Python tools
+  #   The parent directory is mounted so that extract_registers.py can reach
+  #   the sibling  ../dominus/CFG-WFC01_IM_MBUS.json  and
+  #                ../dominus/LBL-WFC01_IM_MBUS.json
+  #   Working directory inside the container is /workspace/Immergas-Modbus
+  #   (equivalent to the repository root on the host).
+  #
+  #   Usage:
+  #     docker compose run --rm tools python extract_registers.py
+  #     docker compose run --rm tools python tools/generate_pdus_header.py
+  #     docker compose run --rm tools python tools/lookup_register.py
+  #     docker compose run --rm tools python tools/lookup_register.py --pdu 2100 --value 10
+  # -------------------------------------------------------------------------
+  tools:
+    image: python:3.11-slim
+    container_name: immergas_tools
+    working_dir: /workspace/Immergas-Modbus
+    volumes:
+      - ..:/workspace                    # parent dir → /workspace
+    profiles: [tools]                   # only runs when --profile tools is given
+                                        # or via: docker compose run --rm tools …
+
+  # -------------------------------------------------------------------------
+  # C++ Modbus loopback test
+  #   Compiles tools/modbus_loopback.cpp with g++ and runs the resulting
+  #   binary to validate Modbus RTU framing and CRC without hardware.
+  #
+  #   Usage:
+  #     docker compose run --rm loopback
+  # -------------------------------------------------------------------------
+  loopback:
+    image: gcc:14
+    container_name: immergas_loopback
+    working_dir: /src
+    volumes:
+      - ./tools:/src
+    command: >
+      bash -c "g++ -std=c++17 -Wall modbus_loopback.cpp -o modbus_loopback
+               && ./modbus_loopback"
+    profiles: [test]

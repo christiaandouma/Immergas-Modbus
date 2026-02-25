@@ -1,0 +1,13 @@
+# ESPHome secrets — never commit credentials
+secrets.yaml
+
+# ESPHome build cache
+.esphome/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# C++ build artefacts
+tools/modbus_loopback
+tools/*.o
