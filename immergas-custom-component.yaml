@@ -1,0 +1,669 @@
+# =============================================================================
+# ESPHome configuratie voor Immergas Magis Combo V2
+# Custom immergas_modbus component - Auto-generated sensors
+# =============================================================================
+#
+# This configuration uses the custom immergas_modbus component which:
+# - Auto-polls ALL registers from immergas_registers.json
+# - Includes both high-level (2000+) and low-level (0-268) registers
+# - Uses sensor metadata from the JSON for labels and units
+#
+# =============================================================================
+
+esphome:
+  name: immergas-magis-combo
+  friendly_name: Immergas Magis Combo
+  comment: "Warmtepomp monitoring via custom Modbus component"
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+# =============================================================================
+# NETWERK & API
+# =============================================================================
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Immergas-Fallback"
+    password: "fallback123"
+
+captive_portal:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+web_server:
+  port: 80
+  version: 3
+  local: true
+
+logger:
+  level: DEBUG  # Set to DEBUG to see Modbus traffic
+  baud_rate: 0  # Disable UART logging (we need UART for Modbus)
+
+# =============================================================================
+# UART / RS-485 CONFIGURATIE
+# =============================================================================
+
+uart:
+  id: mod_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
+  baud_rate: 9600
+  parity: NONE
+  stop_bits: 1
+
+# =============================================================================
+# IMMERGAS MODBUS CUSTOM COMPONENT
+# =============================================================================
+
+immergas_modbus:
+  im_controller_id: immergas_controller
+  uart_id: mod_bus
+  update_interval: 30s
+  language: en
+  debug_log_messages: true
+  client:
+    im_client_id: immergas_client
+    # flow_control_pin: GPIO21  # Uncomment if using MAX485 with DE/RE pin
+  devices:
+    - address: "11"
+
+# =============================================================================
+# SENSORS - LOW-LEVEL REGISTERS (0-268) - Midea OEM Layer
+# =============================================================================
+
+sensor:
+  # --- Power & Mode Settings ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0000  # PDU 0 - Power On/Off
+    name: "LL Power On/Off"
+    
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0001  # PDU 1 - Mode Setting
+    name: "LL Mode Setting"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0002  # PDU 2 - T1s Water Temp Setting
+    name: "LL T1s Water Temp Setting"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0003  # PDU 3 - Second Target Temp
+    name: "LL Second Target Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0004  # PDU 4 - HP Water Temp T5s
+    name: "LL HP Water Temp T5s"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Heat Pump Operating Data (100-146) ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0064  # PDU 100 - HP Operating Frequency
+    name: "LL HP Operating Frequency"
+    unit_of_measurement: "Hz"
+    icon: mdi:sine-wave
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0066  # PDU 102 - HP Fan Speed
+    name: "LL HP Fan Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0067  # PDU 103 - HP PMV Opening
+    name: "LL HP PMV Opening"
+    icon: mdi:valve
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0068  # PDU 104 - Water Inlet Temp TW_in
+    name: "LL Water Inlet Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0069  # PDU 105 - Water Outlet Temp TW_out
+    name: "LL Water Outlet Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006A  # PDU 106 - Condenser Temp T3
+    name: "LL Condenser Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006B  # PDU 107 - Outdoor Ambient Temp T4
+    name: "LL Outdoor Ambient Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006C  # PDU 108 - Compressor Discharge Temp
+    name: "LL Compressor Discharge Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006D  # PDU 109 - Compressor Suction Temp
+    name: "LL Compressor Suction Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006E  # PDU 110 - Total Outlet Water Temp T1
+    name: "LL Total Outlet Water Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x006F  # PDU 111 - Zone 2 Water Supply Temp
+    name: "LL Zone 2 Water Supply Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0070  # PDU 112 - Heat Exchanger Water Temp T2
+    name: "LL Heat Exchanger Water Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0071  # PDU 113 - Refrigerant Side Temp T2B
+    name: "LL Refrigerant Side Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0072  # PDU 114 - Room Temp Ta
+    name: "LL Room Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0073  # PDU 115 - Water Tank Temp T5
+    name: "LL Water Tank Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0074  # PDU 116 - 1st Pressure
+    name: "LL 1st Pressure"
+    unit_of_measurement: "kPa"
+    icon: mdi:gauge
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0075  # PDU 117 - 2nd Pressure
+    name: "LL 2nd Pressure"
+    unit_of_measurement: "kPa"
+    icon: mdi:gauge
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0076  # PDU 118 - Outdoor Unit Current
+    name: "LL Outdoor Unit Current"
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0077  # PDU 119 - Outdoor Unit Voltage
+    name: "LL Outdoor Unit Voltage"
+    unit_of_measurement: "V"
+    device_class: voltage
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x007A  # PDU 122 - Compressor Operating Time
+    name: "LL Compressor Operating Time"
+    unit_of_measurement: "h"
+    icon: mdi:clock-outline
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x007C  # PDU 124 - Power Error
+    name: "LL Power Error"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x007D  # PDU 125 - Error 1
+    name: "LL Error 1"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x007E  # PDU 126 - Error 2
+    name: "LL Error 2"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x007F  # PDU 127 - Error 3
+    name: "LL Error 3"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0082  # PDU 130 - Pump/Compressor Status
+    name: "LL Pump Compressor Status"
+    icon: mdi:pump
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0084  # PDU 132 - Target Frequency
+    name: "LL Target Frequency"
+    unit_of_measurement: "Hz"
+    icon: mdi:sine-wave
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0086  # PDU 134 - DC Bus Voltage
+    name: "LL DC Bus Voltage"
+    unit_of_measurement: "V"
+    device_class: voltage
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x008A  # PDU 138 - Water Flow
+    name: "LL Water Flow"
+    unit_of_measurement: "m³/h"
+    icon: mdi:water-pump
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x008C  # PDU 140 - Hydraulic Module Performance
+    name: "LL Hydraulic Module Performance"
+    unit_of_measurement: "kW"
+    device_class: power
+    accuracy_decimals: 2
+
+  # --- Energy Meters ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x008F  # PDU 143 - Input Energy Upper
+    name: "LL Input Energy Upper"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0090  # PDU 144 - Input Energy Lower
+    name: "LL Input Energy Lower"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0091  # PDU 145 - Output Energy Upper
+    name: "LL Output Energy Upper"
+    entity_category: diagnostic
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0092  # PDU 146 - Output Energy Lower
+    name: "LL Output Energy Lower"
+    entity_category: diagnostic
+
+  # --- Setpoints (212-268) ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x00D7  # PDU 215 - T4 DHW Max
+    name: "LL T4 DHW Max"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x00D8  # PDU 216 - T4 DHW Min
+    name: "LL T4 DHW Min"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0105  # PDU 261 - Cool Setpoint 1
+    name: "LL Cool Setpoint 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0106  # PDU 262 - Cool Setpoint 2
+    name: "LL Cool Setpoint 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0109  # PDU 265 - Heat Setpoint 1
+    name: "LL Heat Setpoint 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x010A  # PDU 266 - Heat Setpoint 2
+    name: "LL Heat Setpoint 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  # =============================================================================
+  # SENSORS - HIGH-LEVEL REGISTERS (2000+) - Immergas BMS Layer
+  # =============================================================================
+
+  # --- System Status ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07D0  # PDU 2000 - Boiler Status
+    name: "Boiler Status"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07D1  # PDU 2001 - Functional Log / Water Request
+    name: "Functional Log"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0834  # PDU 2100 - Functional Log Status
+    name: "Functional Log Status"
+
+  # --- Zone 1 ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07DA  # PDU 2010 - Heating Request Zone 1
+    name: "Heating Request Zone 1"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07DB  # PDU 2011 - Room Temp Zone 1
+    name: "Room Temp Zone 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07DF  # PDU 2015 - Room Temp Setpoint Zone 1
+    name: "Room Temp Setpoint Zone 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Zone 2 ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07E4  # PDU 2020 - Heating Request Zone 2
+    name: "Heating Request Zone 2"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07E5  # PDU 2021 - Room Temp Zone 2
+    name: "Room Temp Zone 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07E9  # PDU 2025 - Room Temp Setpoint Zone 2
+    name: "Room Temp Setpoint Zone 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Zone 3 ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07EE  # PDU 2030 - Heating Request Zone 3
+    name: "Heating Request Zone 3"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07EF  # PDU 2031 - Room Temp Zone 3
+    name: "Room Temp Zone 3"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07F3  # PDU 2035 - Room Temp Setpoint Zone 3
+    name: "Room Temp Setpoint Zone 3"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Zone 4 ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07F8  # PDU 2040 - Heating Request Zone 4
+    name: "Heating Request Zone 4"
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07F9  # PDU 2041 - Room Temp Zone 4
+    name: "Room Temp Zone 4"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x07FD  # PDU 2045 - Room Temp Setpoint Zone 4
+    name: "Room Temp Setpoint Zone 4"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- DHW (Hot Water) ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x082F  # PDU 2095 - Water Temp Setpoint
+    name: "DHW Temp Setpoint"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0BC8  # PDU 3016 - Water Temp
+    name: "DHW Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Outdoor & Flow Temps ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0BBA  # PDU 3002 - Outdoor Temp
+    name: "Outdoor Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0BB8  # PDU 3000 - Flow Temp
+    name: "Flow Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x0BB9  # PDU 3001 - Return Temp
+    name: "Return Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  # --- Comfort/Eco Settings ---
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A2  # PDU 2210 - Set Comfort Heat
+    name: "Set Comfort Heat"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A3  # PDU 2211 - Set Eco Heat
+    name: "Set Eco Heat"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A6  # PDU 2214 - Set Comfort Cool
+    name: "Set Comfort Cool"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A7  # PDU 2215 - Set Eco Cool
+    name: "Set Eco Cool"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A8  # PDU 2216 - Set Humidity
+    name: "Set Humidity"
+    unit_of_measurement: "%"
+    icon: mdi:water-percent
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08A9  # PDU 2217 - Set Flow Temp
+    name: "Set Flow Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+
+  - platform: immergas_modbus
+    im_controller_id: immergas_controller
+    message: 0x08AA  # PDU 2218 - Offset Flow Temp
+    name: "Offset Flow Temp"
+    unit_of_measurement: "°C"
+
+  # =============================================================================
+  # ESP32 DIAGNOSTIEK
+  # =============================================================================
+
+  - platform: wifi_signal
+    name: "WiFi Signaal"
+    update_interval: 60s
+    entity_category: diagnostic
+
+  - platform: uptime
+    name: "Uptime"
+    entity_category: diagnostic
+
+  - platform: internal_temperature
+    name: "ESP32 Temperatuur"
+    entity_category: diagnostic
+
+# =============================================================================
+# TEXT SENSOREN
+# =============================================================================
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Adres"
+      entity_category: diagnostic
+    ssid:
+      name: "WiFi SSID"
+      entity_category: diagnostic
+
+  - platform: version
+    name: "ESPHome Versie"
+    entity_category: diagnostic
+
+# =============================================================================
+# BINAIRE SENSOREN
+# =============================================================================
+
+binary_sensor:
+  - platform: status
+    name: "Status"
+    entity_category: diagnostic
+
+# =============================================================================
+# KNOPPEN
+# =============================================================================
+
+button:
+  - platform: restart
+    name: "Herstart ESP"
+    entity_category: config
+
+# =============================================================================
+# TIJD
+# =============================================================================
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: "Europe/Amsterdam"
